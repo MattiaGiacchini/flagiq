@@ -98,7 +98,7 @@ class AnalyticsService {
       const posthog = await import('posthog-js')
       
       // Initialize PostHog with privacy-focused settings
-      posthog.default.init('phc_Bdmz4pGPXd4RfIQj9NMs41pzbAL5NxNhLN9vBiiMGpl', {
+      posthog.init('phc_Bdmz4pGPXd4RfIQj9NMs41pzbAL5NxNhLN9vBiiMGpl', {
         api_host: 'https://eu.i.posthog.com',
         defaults: '2026-05-30',
         disable_session_recording: true,     // Critical: disable session recording
