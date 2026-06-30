@@ -150,18 +150,16 @@ const hasGameData = computed(() => props.total > 0)
               </div>
             </div>
 
-            <!-- Blitz completion info -->
-            <div v-if="isBlitz && blitzCompleted !== undefined && blitzTotal !== undefined" class="results__blitz-info">
-              <span class="results__blitz-label">
-                {{ props.locale === 'es' ? 'Completadas' : 'Completed' }}:
-              </span>
-              <span class="results__blitz-value">
+            <div class="results__time-section">
+              <div class="results__time" role="timer" :aria-label="props.locale === 'es' ? `Tiempo transcurrido: ${formattedTime}` : `Time elapsed: ${formattedTime}`">
+                <span class="results__time-value">{{ formattedTime }}</span>
+              </div>
+              
+              <!-- Blitz completion info - subtle placement below time -->
+              <div v-if="isBlitz && blitzCompleted !== undefined && blitzTotal !== undefined" class="results__blitz-info">
                 {{ blitzCompleted }} / {{ blitzTotal }}
-              </span>
-            </div>
-
-            <div class="results__time" role="timer" :aria-label="props.locale === 'es' ? `Tiempo transcurrido: ${formattedTime}` : `Time elapsed: ${formattedTime}`">
-              <span class="results__time-value">{{ formattedTime }}</span>
+                <span class="results__blitz-label">{{ props.locale === 'es' ? 'completadas' : 'completed' }}</span>
+              </div>
             </div>
           </section>
 
@@ -386,6 +384,13 @@ const hasGameData = computed(() => props.total > 0)
   background: var(--color-border);
 }
 
+.results__time-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
 .results__time {
   display: flex;
   align-items: center;
@@ -396,29 +401,18 @@ const hasGameData = computed(() => props.total > 0)
 }
 
 .results__blitz-info {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: var(--font-weight-medium);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #fef3c7;
-  border-radius: var(--radius-md);
-  border: 1px solid #f59e0b;
+  gap: 0.25rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .results__blitz-label {
-  font-size: 0.875rem;
-  font-weight: var(--font-weight-medium);
-  color: #92400e;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.results__blitz-value {
-  font-size: 1rem;
-  font-weight: var(--font-weight-bold);
-  color: #92400e;
-  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-normal);
+  opacity: 0.8;
 }
 
 .results__time-value {
