@@ -6,13 +6,12 @@ import { flagName } from '@/data/flags'
 import { continentName } from '@/utils/continentNames'
 import InteractiveMap, { type CountryHighlight } from './InteractiveMap.vue'
 import { useSessionStore } from '@/stores/session'
+import { useGameStore } from '@/stores/game'
 import FlagImage from '@/components/common/FlagImage.vue'
 
 const props = defineProps<{
   question: Question
   locale: AppLocale
-  blitzMode?: boolean
-  timeRemaining?: number
 }>()
 
 const emit = defineEmits<{
@@ -27,6 +26,7 @@ const feedbackState = ref<FeedbackState>('idle')
 const isMobile = ref(false)
 
 const sessionStore = useSessionStore()
+const gameStore = useGameStore()
 
 const modeLabel = computed(() =>
   props.locale === 'es'
@@ -70,11 +70,6 @@ const disableInteraction = computed(() => chosen.value !== null)
 const wrongAnswerCountryName = computed(() => {
   if (feedbackState.value !== 'wrong') return ''
   return flagName(props.question.correct, props.locale)
-})
-
-const isLowTime = computed(() => {
-  if (!props.blitzMode || props.timeRemaining === undefined) return false
-  return props.timeRemaining < 3
 })
 
 function updateMobileState() {
@@ -144,12 +139,6 @@ function handleCountryClick(countryId: string) {
         >
           {{ hintRevealed ? continentHintText : showContinentLabel }}
         </button>
-      </div>
-
-      <!-- Blitz mode timer display -->
-      <div v-if="blitzMode && timeRemaining !== undefined" class="timer-display" :class="{ 'timer-display--low': isLowTime }">
-        <span class="timer-label">{{ locale === 'es' ? 'Tiempo' : 'Time' }}:</span>
-        <span class="timer-value">{{ timeRemaining }}s</span>
       </div>
 
       <!-- Feedback message -->
@@ -263,46 +252,6 @@ function handleCountryClick(countryId: string) {
   background: #f3f4f6;
   border-color: #d1d5db;
   color: #6b7280;
-}
-
-.timer-display {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background: #ffffff;
-  border: 2px solid #e8ebf0;
-  border-radius: 0.5rem;
-  font-weight: 600;
-}
-
-.timer-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.timer-value {
-  font-size: 1.125rem;
-  color: #1a1f3c;
-}
-
-.timer-display--low {
-  border-color: #ef4444;
-  background: #fef2f2;
-  animation: pulse 0.5s ease-in-out infinite;
-}
-
-.timer-display--low .timer-value {
-  color: #ef4444;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
 }
 
 .feedback-message {

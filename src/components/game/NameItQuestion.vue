@@ -4,6 +4,7 @@ import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
 import FlagImage from '@/components/common/FlagImage.vue'
+import { useGameStore } from '@/stores/game'
 
 const props = defineProps<{
   question: Question
@@ -18,6 +19,11 @@ type OptionState = 'idle' | 'correct' | 'wrong'
 const chosen = ref<string | null>(null)
 const optionStates = ref<Record<string, OptionState>>({})
 const isMobile = ref(false)
+
+// Blitz mode timer
+const gameStore = useGameStore()
+const blitzTimeLeft = computed(() => gameStore.blitzTimeLeft)
+const isBlitzActive = computed(() => gameStore.isBlitzActive)
 
 const modeLabel = computed(() =>
   props.locale === 'es'
@@ -38,12 +44,26 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateMobileState)
 })
 
+// Watch for question changes and reset state
+// Using explicit options to ensure proper reactivity
 watch(
   () => props.question,
   () => {
     chosen.value = null
     optionStates.value = {}
   },
+  { immediate: false, deep: false }
+)
+
+// Watch for game becoming inactive (timer expiration or game end)
+watch(
+  () => gameStore.isActive,
+  (active) => {
+    if (!active && gameStore.blitzMode) {
+      // Game ended by Blitz timeout
+      // Component will handle navigation through router or parent
+    }
+  }
 )
 
 function pick(id: string) {
@@ -76,7 +96,7 @@ function pick(id: string) {
       />
     </div>
 
-    <div class="options" role="list">
+    <div class="options" role="list" :key="question.correct.id">
       <button
         v-for="opt in question.options"
         :key="opt.id"

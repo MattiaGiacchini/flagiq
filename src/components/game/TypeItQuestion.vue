@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
 import { isCloseMatch } from '@/utils/normalize'
 import FlagImage from '@/components/common/FlagImage.vue'
+import { useGameStore } from '@/stores/game'
 
 const props = defineProps<{
   question: Question
@@ -22,6 +23,30 @@ const userInput = ref('')
 const state = ref<State>('idle')
 const correctAnswer = ref('')
 const isMobile = ref(false)
+
+// Blitz mode timer
+const gameStore = useGameStore()
+const blitzTimeLeft = computed(() => gameStore.blitzTimeLeft)
+const isBlitzActive = computed(() => gameStore.isBlitzActive)
+
+// Computed translations
+const modeLabel = computed(() =>
+  props.locale === 'es'
+    ? 'VER LA BANDERA · ESCRIBE EL PAÍS'
+    : 'SEE THE FLAG · TYPE THE COUNTRY',
+)
+
+const placeholder = computed(() =>
+  props.locale === 'es' ? 'Escribe el país…' : 'Type the country…',
+)
+
+const submitText = computed(() =>
+  props.locale === 'es' ? 'Confirmar' : 'Submit',
+)
+
+const correctRevealPrefix = computed(() =>
+  props.locale === 'es' ? 'Era' : 'It was',
+)
 
 async function focusInput() {
   await nextTick()
@@ -52,6 +77,17 @@ watch(
   { immediate: true },
 )
 
+// Watch for Blitz timer expiration
+watch(
+  () => gameStore.isActive,
+  (active) => {
+    if (!active && gameStore.blitzMode) {
+      // Game ended by Blitz timeout
+      // The parent component will handle navigation to results
+    }
+  }
+)
+
 function submit() {
   if (state.value !== 'idle') return
   const raw = userInput.value.trim()
@@ -77,15 +113,15 @@ function handleKeydown(e: KeyboardEvent) {
 
 <template>
   <div class="type-it">
-    <p class="mode-label">
-      {{ locale === 'es' ? 'VER LA BANDERA · ESCRIBE EL PAÍS' : 'SEE THE FLAG · TYPE THE COUNTRY' }}
-    </p>
+    <p class="mode-label">{{ modeLabel }}</p>
 
     <div class="flag-display" aria-label="Flag to identify">
       <FlagImage
         :country-code="question.correct.id"
         :emoji="question.correct.emoji"
-        :alt="`Flag of ${flagName(question.correct, locale)}`"
+        :alt="locale === 'es' 
+          ? `Bandera de ${flagName(question.correct, locale)}` 
+          : `Flag of ${flagName(question.correct, locale)}`"
         eager
         :show-skeleton="isMobile"
       />
@@ -104,7 +140,7 @@ function handleKeydown(e: KeyboardEvent) {
           v-model="userInput"
           class="text-input"
           type="text"
-          :placeholder="locale === 'es' ? 'Escribe el país…' : 'Type the country…'"
+          :placeholder="placeholder"
           :disabled="state !== 'idle'"
           autocomplete="off"
           autocorrect="off"
@@ -119,7 +155,7 @@ function handleKeydown(e: KeyboardEvent) {
           :disabled="!userInput.trim()"
           @click="submit"
         >
-          {{ locale === 'es' ? 'Confirmar' : 'Submit' }} →
+          {{ submitText }} →
         </button>
 
         <span v-else class="state-icon">
@@ -131,7 +167,7 @@ function handleKeydown(e: KeyboardEvent) {
       <!-- Show correct answer on wrong -->
       <Transition name="fade">
         <p v-if="state === 'wrong'" class="correct-reveal">
-          {{ locale === 'es' ? 'Era' : 'It was' }}
+          {{ correctRevealPrefix }}
           <strong>{{ correctAnswer }}</strong>
         </p>
       </Transition>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import ToggleSwitch from 'primevue/toggleswitch'
+import { useLocaleStore } from '@/stores/locale'
 
 const props = defineProps<{
   modelValue: boolean
@@ -8,6 +10,17 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [enabled: boolean]
 }>()
+
+const localeStore = useLocaleStore()
+const locale = computed(() => localeStore.current)
+
+const title = computed(() => 
+  locale.value === 'es' ? '⚡ Modo Relámpago' : '⚡ Blitz Mode'
+)
+
+const subtitle = computed(() => 
+  locale.value === 'es' ? 'Prueba de 30 segundos' : '30-second trial'
+)
 
 function handleChange(value: boolean) {
   emit('update:modelValue', value)
@@ -18,16 +31,13 @@ function handleChange(value: boolean) {
   <div class="blitz-mode-toggle">
     <div class="blitz-mode-toggle__content">
       <div class="blitz-mode-toggle__labels">
-        <span class="blitz-mode-toggle__title">⚡ Blitz Mode</span>
-        <span class="blitz-mode-toggle__subtitle">60-second trial</span>
+        <span class="blitz-mode-toggle__title">{{ title }}</span>
+        <span class="blitz-mode-toggle__subtitle">{{ subtitle }}</span>
       </div>
       <ToggleSwitch
         :modelValue="props.modelValue"
         @update:modelValue="handleChange"
       />
-    </div>
-    <div v-if="props.modelValue" class="blitz-mode-toggle__badge">
-      <span class="blitz-mode-toggle__badge-text">60s</span>
     </div>
   </div>
 </template>

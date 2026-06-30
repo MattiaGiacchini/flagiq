@@ -19,7 +19,7 @@ const gameStore = useGameStore()
 const localeStore = useLocaleStore()
 
 const { config } = storeToRefs(sessionStore)
-const { currentQuestion, currentIndex, totalQuestions, score, streak, isFinished, elapsedMs, answers } = storeToRefs(gameStore)
+const { currentQuestion, currentIndex, totalQuestions, score, streak, isFinished, elapsedMs, answers, blitzTimeLeft, isBlitzActive } = storeToRefs(gameStore)
 const { current: locale } = storeToRefs(localeStore)
 
 const t = computed(() => ({
@@ -91,6 +91,21 @@ function handleHome() {
         :streak="streak"
         :locale="locale"
       />
+
+      <!-- Blitz Mode Timer -->
+      <div 
+        v-if="isBlitzActive && !isFinished" 
+        class="blitz-timer"
+        :class="{ 'blitz-timer--warning': blitzTimeLeft <= 10 }"
+        role="timer"
+        :aria-live="blitzTimeLeft <= 10 ? 'assertive' : 'polite'"
+        :aria-label="locale === 'es' 
+          ? `Tiempo restante: ${blitzTimeLeft} segundos` 
+          : `Time remaining: ${blitzTimeLeft} seconds`"
+      >
+        <span class="blitz-timer__icon">⚡</span>
+        <span class="blitz-timer__time">{{ blitzTimeLeft }}s</span>
+      </div>
     </div>
 
     <!-- Results screen -->
@@ -131,7 +146,6 @@ function handleHome() {
             v-else-if="config.mode === 'find-on-map'"
             :question="currentQuestion"
             :locale="locale"
-            :blitz-mode="config.blitz"
             @answer="handleAnswer"
           />
           <!-- fallback for unimplemented modes -->
@@ -187,6 +201,54 @@ function handleHome() {
 .back-btn:hover {
   color: #1a1f3c;
   border-color: #c4c9d4;
+}
+
+/* Blitz timer in header */
+.blitz-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #f59e0b;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.blitz-timer__icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.blitz-timer__time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400e;
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+  text-align: right;
+}
+
+.blitz-timer--warning {
+  border-color: #ef4444;
+  background: rgba(254, 242, 242, 0.95);
+  animation: pulse 1s infinite;
+}
+
+.blitz-timer--warning .blitz-timer__time {
+  color: #dc2626;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
 }
 
 .question-wrapper {

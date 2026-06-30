@@ -4,6 +4,7 @@ import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
 import FlagImage from '@/components/common/FlagImage.vue'
+import { useGameStore } from '@/stores/game'
 
 const props = defineProps<{
   question: Question
@@ -14,15 +15,26 @@ const emit = defineEmits<{
   answer: [chosenId: string]
 }>()
 
+const gameStore = useGameStore()
+
 type OptionState = 'idle' | 'correct' | 'wrong'
 const chosen = ref<string | null>(null)
 const optionStates = ref<Record<string, OptionState>>({})
 const isMobile = ref(false)
 
+// Blitz mode timer state from store
+const blitzTimeLeft = computed(() => gameStore.blitzTimeLeft)
+const isBlitzActive = computed(() => gameStore.isBlitzActive)
+
 const modeLabel = computed(() =>
   props.locale === 'es'
     ? 'VER EL PAÍS · ELIGE LA BANDERA'
     : 'SEE THE COUNTRY · CHOOSE THE FLAG',
+)
+
+// Detect if time is critically low
+const isLowTime = computed(() => 
+  isBlitzActive.value && blitzTimeLeft.value <= 10
 )
 
 function updateMobileState() {
@@ -44,6 +56,17 @@ watch(
     chosen.value = null
     optionStates.value = {}
   },
+)
+
+// Watch for game ending due to Blitz timer expiration
+watch(
+  () => gameStore.isActive,
+  (active) => {
+    if (!active && gameStore.blitzMode) {
+      // Game ended by Blitz timeout
+      // The router will handle navigation to results
+    }
+  }
 )
 
 function pick(id: string) {
@@ -79,7 +102,9 @@ function pick(id: string) {
           'option-btn--disabled': chosen !== null,
         }"
         :disabled="chosen !== null"
-        :aria-label="chosen !== null ? flagName(opt, locale) : 'Flag option'"
+        :aria-label="chosen !== null 
+          ? flagName(opt, locale) 
+          : (locale === 'es' ? 'Opción de bandera' : 'Flag option')"
         role="listitem"
         @click="pick(opt.id)"
       >

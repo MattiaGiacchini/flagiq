@@ -116,11 +116,18 @@ export const useGameStore = defineStore('game', () => {
   const startedAt = ref<number | null>(null)
   const finishedAt = ref<number | null>(null)
 
+  // Blitz mode timer state
+  const blitzMode = ref<boolean>(false)
+  const blitzTimeLeft = ref<number>(30)
+  const blitzTimerId = ref<number | null>(null)
+
   const currentQuestion = computed<Question | null>(
     () => questions.value[currentIndex.value] ?? null,
   )
 
   const totalQuestions = computed(() => questions.value.length)
+
+  const isBlitzActive = computed(() => blitzMode.value && blitzTimeLeft.value > 0)
 
   const score = computed(() =>
     answers.value.filter(a => a.result === 'correct').length,
@@ -137,7 +144,8 @@ export const useGameStore = defineStore('game', () => {
   })
 
   const isFinished = computed(
-    () => isActive.value && currentIndex.value >= questions.value.length,
+    () => (isActive.value && currentIndex.value >= questions.value.length) || 
+          (blitzMode.value && blitzTimeLeft.value === 0),
   )
 
   const elapsedMs = computed(() => {
@@ -153,6 +161,11 @@ export const useGameStore = defineStore('game', () => {
     isActive.value = true
     startedAt.value = Date.now()
     finishedAt.value = null
+
+    // Start Blitz timer if enabled
+    if (config.blitz) {
+      startBlitzTimer()
+    }
   }
 
   function answer(chosenId: string, hintUsed?: boolean): QuestionResult {
@@ -178,6 +191,38 @@ export const useGameStore = defineStore('game', () => {
     isActive.value = false
     startedAt.value = null
     finishedAt.value = null
+    
+    // Clean up Blitz timer state
+    stopBlitzTimer()
+    blitzMode.value = false
+    blitzTimeLeft.value = 30
+  }
+
+  function startBlitzTimer() {
+    // Stop existing timer before starting new one
+    stopBlitzTimer()
+    
+    blitzMode.value = true
+    blitzTimeLeft.value = 30
+    
+    blitzTimerId.value = window.setInterval(() => {
+      blitzTimeLeft.value--
+      
+      if (blitzTimeLeft.value <= 0) {
+        // Timer expired - end the game
+        blitzTimeLeft.value = 0 // Ensure it doesn't go negative
+        stopBlitzTimer()
+        finishedAt.value = Date.now()
+        isActive.value = false
+      }
+    }, 1000)
+  }
+
+  function stopBlitzTimer() {
+    if (blitzTimerId.value !== null) {
+      clearInterval(blitzTimerId.value)
+      blitzTimerId.value = null
+    }
   }
 
   return {
@@ -193,8 +238,13 @@ export const useGameStore = defineStore('game', () => {
     score,
     streak,
     isFinished,
+    blitzMode,
+    blitzTimeLeft,
+    isBlitzActive,
     startGame,
     answer,
     reset,
+    startBlitzTimer,
+    stopBlitzTimer,
   }
 })
