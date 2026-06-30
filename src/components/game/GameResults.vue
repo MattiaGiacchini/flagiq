@@ -303,7 +303,7 @@ const hasGameData = computed(() => props.total > 0)
   align-items: center;
   background: var(--color-background);
   border-radius: var(--radius-xl);
-  padding: 2.5rem 1rem 1.5rem;
+  padding: 3.5rem 1rem 1.5rem;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
   text-align: center;

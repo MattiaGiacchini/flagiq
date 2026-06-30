@@ -127,27 +127,22 @@ function getAnsweredLabel(): string {
 
 .incorrect-answers__flag-container {
   flex-shrink: 0;
-  width: 4rem;
-  height: 3rem;
+  width: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-background);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-xs);
-  box-shadow: var(--shadow-sm);
 }
 
 .incorrect-answers__flag {
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .incorrect-answers__content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.25rem;
   min-width: 0;
 }
 
@@ -183,8 +178,7 @@ function getAnsweredLabel(): string {
   }
   
   .incorrect-answers__flag-container {
-    width: 3.5rem;
-    height: 2.625rem;
+    width: 80px;
   }
   
   .incorrect-answers__correct {
@@ -216,8 +210,7 @@ function getAnsweredLabel(): string {
   }
   
   .incorrect-answers__flag-container {
-    width: 4.5rem;
-    height: 3.375rem;
+    width: 100px;
   }
 }
 </style>
