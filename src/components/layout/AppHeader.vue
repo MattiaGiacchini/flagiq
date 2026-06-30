@@ -10,10 +10,7 @@ const { current: locale } = storeToRefs(localeStore)
   <header class="app-header">
     <div class="app-header__brand">
       <span class="app-header__logo-box" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <path d="M8 21h8M12 17v4"/>
-        </svg>
+        <img src="/logo.svg"  alt="Logo"/>
       </span>
       <span class="app-header__name">FlagIQ</span>
     </div>
@@ -67,14 +64,13 @@ const { current: locale } = storeToRefs(localeStore)
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background-color: #4a5af7;
   border-radius: 0.5rem;
   color: #ffffff;
 }
 
-.app-header__logo-box svg {
-  width: 1.125rem;
-  height: 1.125rem;
+.app-header__logo-box img {
+  width: 2rem;
+  height: 2rem;
 }
 
 .app-header__name {
