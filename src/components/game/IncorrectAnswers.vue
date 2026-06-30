@@ -60,7 +60,7 @@ function getAnsweredLabel(): string {
             :country-code="item.correctFlag.id.toLowerCase()"
             :emoji="item.correctFlag.emoji"
             :alt="`${getCorrectName(item)} ${locale === 'es' ? 'bandera' : 'flag'}`"
-            :eager="index < 3"
+            :eager="true"
             :show-skeleton="false"
             class="incorrect-answers__flag"
           />
