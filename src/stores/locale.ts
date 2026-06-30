@@ -12,7 +12,7 @@ function readStoredLocale(): AppLocale {
   } catch {
     // localStorage not available (SSR / private mode edge cases)
   }
-  return 'en'
+  return 'es'
 }
 
 export const useLocaleStore = defineStore('locale', () => {
