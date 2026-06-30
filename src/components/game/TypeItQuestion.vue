@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
@@ -21,11 +21,25 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const userInput = ref('')
 const state = ref<State>('idle')
 const correctAnswer = ref('')
+const isMobile = ref(false)
 
 async function focusInput() {
   await nextTick()
   inputRef.value?.focus()
 }
+
+function updateMobileState() {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  updateMobileState()
+  window.addEventListener('resize', updateMobileState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMobileState)
+})
 
 watch(
   () => props.question,
@@ -73,6 +87,7 @@ function handleKeydown(e: KeyboardEvent) {
         :emoji="question.correct.emoji"
         :alt="`Flag of ${flagName(question.correct, locale)}`"
         eager
+        :show-skeleton="isMobile"
       />
     </div>
 

@@ -8,6 +8,7 @@ import ContinentFilter from './ContinentFilter.vue'
 import GameModeSelector from './GameModeSelector.vue'
 import QuestionCountPicker from './QuestionCountPicker.vue'
 import BlitzModeToggle from './BlitzModeToggle.vue'
+import SimilarityToggle from './SimilarityToggle.vue'
 import StartSessionButton from './StartSessionButton.vue'
 
 const router = useRouter()
@@ -24,6 +25,7 @@ const selectedContinents = ref<Continent[]>([...savedConfig.continents])
 const selectedMode = ref<GameMode | null>(hasSavedConfig ? savedConfig.mode : null)
 const selectedCount = ref<QuestionCount>(savedConfig.count)
 const blitzEnabled = ref<boolean>(savedConfig.blitz)
+const similarityEnabled = ref<boolean>(savedConfig.useSimilarity ?? false)
 
 const availableFlags = computed(() => flagsByContinent(selectedContinents.value).length)
 
@@ -40,6 +42,7 @@ function handleStart() {
     mode: selectedMode.value,
     count: selectedCount.value,
     blitz: blitzEnabled.value,
+    useSimilarity: similarityEnabled.value,
   }
   const success = sessionStore.updateConfig(currentConfig)
   if (success) {
@@ -79,6 +82,12 @@ function handleStart() {
 
       <section class="panel-card">
         <BlitzModeToggle v-model="blitzEnabled" />
+      </section>
+    </div>
+
+    <div class="panel-row">
+      <section class="panel-card panel-card--full">
+        <SimilarityToggle v-model="similarityEnabled" />
       </section>
     </div>
 
@@ -145,6 +154,10 @@ function handleStart() {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.panel-card--full {
+  grid-column: 1 / -1;
 }
 
 .panel-footer {

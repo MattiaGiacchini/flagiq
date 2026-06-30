@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
@@ -24,6 +24,7 @@ type FeedbackState = 'idle' | 'correct' | 'wrong'
 const chosen = ref<string | null>(null)
 const hintRevealed = ref(false)
 const feedbackState = ref<FeedbackState>('idle')
+const isMobile = ref(false)
 
 const sessionStore = useSessionStore()
 
@@ -76,6 +77,19 @@ const isLowTime = computed(() => {
   return props.timeRemaining < 3
 })
 
+function updateMobileState() {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  updateMobileState()
+  window.addEventListener('resize', updateMobileState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMobileState)
+})
+
 // Watch question prop and reset state when it changes
 watch(
   () => props.question,
@@ -116,6 +130,7 @@ function handleCountryClick(countryId: string) {
           :emoji="question.correct.emoji"
           :alt="`Flag of ${flagName(question.correct, locale)}`"
           eager
+          :show-skeleton="isMobile"
         />
       </div>
 

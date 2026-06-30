@@ -10,6 +10,7 @@ export function isValidSessionConfig(config: unknown): config is SessionConfig {
     c.continents.every(x => ALL_CONTINENTS.includes(x)) &&
     VALID_MODES.includes(c.mode) &&
     VALID_COUNTS.includes(c.count) &&
-    typeof c.blitz === 'boolean'
+    typeof c.blitz === 'boolean' &&
+    (c.useSimilarity === undefined || typeof c.useSimilarity === 'boolean')
   )
 }

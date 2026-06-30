@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 import { flagName } from '@/data/flags'
@@ -17,12 +17,26 @@ const emit = defineEmits<{
 type OptionState = 'idle' | 'correct' | 'wrong'
 const chosen = ref<string | null>(null)
 const optionStates = ref<Record<string, OptionState>>({})
+const isMobile = ref(false)
 
 const modeLabel = computed(() =>
   props.locale === 'es'
     ? 'VER EL PAÍS · ELIGE LA BANDERA'
     : 'SEE THE COUNTRY · CHOOSE THE FLAG',
 )
+
+function updateMobileState() {
+  isMobile.value = window.innerWidth < 768
+}
+
+onMounted(() => {
+  updateMobileState()
+  window.addEventListener('resize', updateMobileState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMobileState)
+})
 
 watch(
   () => props.question,
@@ -74,6 +88,7 @@ function pick(id: string) {
           :emoji="opt.emoji"
           :alt="chosen !== null ? flagName(opt, locale) : ''"
           eager
+          :show-skeleton="isMobile"
         />
       </button>
     </div>

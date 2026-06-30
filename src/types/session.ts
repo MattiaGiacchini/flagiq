@@ -9,6 +9,7 @@ export interface SessionConfig {
   mode: GameMode
   count: QuestionCount
   blitz: boolean
+  useSimilarity?: boolean    // default false — enable similarity-based distractor selection
 }
 
 export const ALL_CONTINENTS: Continent[] = [
