@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/stores/session'
 import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
+import { flagLoader } from '@/services/flagLoader'
 import GameProgressBar from '@/components/game/GameProgressBar.vue'
 import NameItQuestion from '@/components/game/NameItQuestion.vue'
 import ChooseFlagQuestion from '@/components/game/ChooseFlagQuestion.vue'
@@ -18,7 +19,7 @@ const gameStore = useGameStore()
 const localeStore = useLocaleStore()
 
 const { config } = storeToRefs(sessionStore)
-const { currentQuestion, currentIndex, totalQuestions, score, streak, isFinished, elapsedMs } = storeToRefs(gameStore)
+const { currentQuestion, currentIndex, totalQuestions, score, streak, isFinished, elapsedMs, answers } = storeToRefs(gameStore)
 const { current: locale } = storeToRefs(localeStore)
 
 const t = computed(() => ({
@@ -35,19 +36,41 @@ onMounted(() => {
     return
   }
   gameStore.startGame(config.value)
+  
+  // Preload first 3 flags when session starts (Requirement 4.5)
+  if (gameStore.questions.length > 0) {
+    flagLoader.initializeSession(gameStore.questions, 3)
+  }
+})
+
+onBeforeUnmount(() => {
+  // Clean up flag loader when leaving play view
+  flagLoader.resetSession()
 })
 
 function handleAnswer(chosenId: string, hintUsed?: boolean) {
   gameStore.answer(chosenId, hintUsed)
+  
+  // Preload next 2 flags after each answer (Requirement 4.5)
+  // Only preload if there are more questions remaining
+  if (!gameStore.isFinished) {
+    flagLoader.onQuestionAnswered(2)
+  }
 }
 
 function handleRestart() {
   gameStore.startGame(config.value)
+  
+  // Re-initialize flag loader with new question set
+  if (gameStore.questions.length > 0) {
+    flagLoader.initializeSession(gameStore.questions, 3)
+  }
 }
 
 function handleHome() {
   gameStore.reset()
   sessionStore.endSession()
+  flagLoader.resetSession()
   router.push('/')
 }
 </script>
@@ -76,6 +99,7 @@ function handleHome() {
       :score="score"
       :total="totalQuestions"
       :elapsedMs="elapsedMs"
+      :answers="answers"
       :locale="locale"
       @restart="handleRestart"
       @home="handleHome"
