@@ -124,6 +124,11 @@ const hasGameData = computed(() => props.total > 0)
               {{ props.locale === 'es' ? 'Resultados de la sesión' : 'Session Results' }}
             </h1>
 
+            <!-- Game Mode Badge - top right corner -->
+            <div v-if="gameModeName" class="results__mode-badge">
+              {{ gameModeName }}
+            </div>
+
             <!-- Circular Progress Component -->
             <CircularProgress
               :percentage="percentage"
@@ -132,11 +137,6 @@ const hasGameData = computed(() => props.total > 0)
             />
             
             <h2 class="results__message">{{ message }}</h2>
-
-            <!-- Game Mode Badge -->
-            <div v-if="gameModeName" class="results__mode-badge">
-              {{ gameModeName }}
-            </div>
 
             <div class="results__stats" role="group" aria-label="Score breakdown">
               <div class="results__stat">
@@ -303,11 +303,12 @@ const hasGameData = computed(() => props.total > 0)
   align-items: center;
   background: var(--color-background);
   border-radius: var(--radius-xl);
-  padding: 1.5rem 1rem;
+  padding: 2.5rem 1rem 1.5rem;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
   text-align: center;
   gap: var(--spacing-lg);
+  position: relative;
   /* Performance: Layout isolation to prevent reflow propagation */
   contain: layout;
 }
@@ -334,18 +335,21 @@ const hasGameData = computed(() => props.total > 0)
 }
 
 .results__mode-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
-  font-size: 0.8125rem;
+  padding: 0.25rem 0.75rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.6875rem;
   font-weight: var(--font-weight-semibold);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  border: 1px solid #e5e7eb;
 }
 
 .results__stats {
