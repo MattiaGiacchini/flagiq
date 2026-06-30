@@ -127,7 +127,7 @@ function getAnsweredLabel(): string {
 
 .incorrect-answers__flag-container {
   flex-shrink: 0;
-  width: 100px;
+  width: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,7 +142,7 @@ function getAnsweredLabel(): string {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   min-width: 0;
 }
 
@@ -178,7 +178,7 @@ function getAnsweredLabel(): string {
   }
   
   .incorrect-answers__flag-container {
-    width: 80px;
+    width: 70px;
   }
   
   .incorrect-answers__correct {
@@ -210,7 +210,7 @@ function getAnsweredLabel(): string {
   }
   
   .incorrect-answers__flag-container {
-    width: 100px;
+    width: 90px;
   }
 }
 </style>
