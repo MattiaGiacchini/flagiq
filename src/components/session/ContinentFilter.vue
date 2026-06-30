@@ -33,38 +33,33 @@ function toggleContinent(continent: Continent) {
   emit('update:modelValue', next)
 }
 
-const continentConfig: Record<Continent, { label: string; emoji: string; activeBg: string; activeText: string; activeBorder: string }> = {
+const continentConfig: Record<Continent, { label: string; activeBg: string; activeText: string; activeBorder: string }> = {
   europe: {
     label: 'Europe',
-    emoji: '🌍',
     activeBg: '#ede9fe',
     activeText: '#5b21b6',
     activeBorder: '#8b5cf6',
   },
   asia: {
     label: 'Asia',
-    emoji: '🌏',
     activeBg: '#fef3c7',
     activeText: '#92400e',
     activeBorder: '#f59e0b',
   },
   americas: {
     label: 'Americas',
-    emoji: '🌎',
     activeBg: '#dcfce7',
     activeText: '#166534',
     activeBorder: '#22c55e',
   },
   africa: {
     label: 'Africa',
-    emoji: '🌍',
     activeBg: '#fee2e2',
     activeText: '#991b1b',
     activeBorder: '#ef4444',
   },
   oceania: {
     label: 'Oceania',
-    emoji: '🏝️',
     activeBg: '#ccfbf1',
     activeText: '#065f46',
     activeBorder: '#14b8a6',
@@ -100,7 +95,7 @@ const continentConfig: Record<Continent, { label: string; emoji: string; activeB
       :aria-pressed="modelValue.includes(continent)"
       @click="toggleContinent(continent)"
     >
-      {{ continentConfig[continent].emoji }} {{ continentConfig[continent].label }}
+      {{ continentConfig[continent].label }}
     </button>
   </div>
 </template>
@@ -124,7 +119,6 @@ const continentConfig: Record<Continent, { label: string; emoji: string; activeB
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: center;
-  gap: 0.375rem;
 }
 
 /* All Regions */
