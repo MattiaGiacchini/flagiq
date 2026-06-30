@@ -6,12 +6,14 @@ import Aura from '@primeuix/themes/aura';
 import App from './App.vue'
 import router from './router'
 import {definePreset} from "@primeuix/themes";
+import { createAnalyticsPlugin } from '@/plugins/analytics'
 
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+app.use(createAnalyticsPlugin({ router }))
 
 
 const FlagIQPreset = definePreset(Aura, {

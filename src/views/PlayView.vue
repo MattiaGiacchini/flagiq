@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, computed, onBeforeUnmount, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/stores/session'
 import { useGameStore } from '@/stores/game'
 import { useLocaleStore } from '@/stores/locale'
 import { flagLoader } from '@/services/flagLoader'
+import { analytics } from '@/plugins/analytics'
 import GameProgressBar from '@/components/game/GameProgressBar.vue'
 import NameItQuestion from '@/components/game/NameItQuestion.vue'
 import ChooseFlagQuestion from '@/components/game/ChooseFlagQuestion.vue'
@@ -52,6 +53,19 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Clean up flag loader when leaving play view
   flagLoader.resetSession()
+})
+
+// Track game abandonment when user leaves mid-game (Requirement 5.7)
+onBeforeRouteLeave((to, from) => {
+  if (gameStore.isActive && !gameStore.isFinished) {
+    analytics.capture('game_abandoned', {
+      game_mode: sessionStore.config.mode,
+      current_question: gameStore.currentIndex + 1,
+      total_questions: gameStore.totalQuestions,
+      elapsed_time_ms: gameStore.elapsedMs
+    })
+  }
+  return true // Allow navigation
 })
 
 function handleAnswer(chosenId: string, hintUsed?: boolean) {
