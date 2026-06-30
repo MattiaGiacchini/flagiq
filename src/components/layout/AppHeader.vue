@@ -12,7 +12,7 @@ const { current: locale } = storeToRefs(localeStore)
       <span class="app-header__logo-box" aria-hidden="true">
         <img src="/logo.svg"  alt="Logo"/>
       </span>
-      <span class="app-header__name">FlagIQ</span>
+      <span class="app-header__name">VexIQ</span>
     </div>
 
     <div class="app-header__right">
