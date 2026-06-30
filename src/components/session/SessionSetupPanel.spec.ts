@@ -5,6 +5,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import SessionSetupPanel from './SessionSetupPanel.vue'
 import { DEFAULT_SESSION_CONFIG } from '@/types/session'
 import type { SessionConfig, GameMode } from '@/types/session'
+import { useLocaleStore } from '@/stores/locale'
 
 describe('SessionSetupPanel - Task 1.1 Verification', () => {
   let router: any
@@ -154,6 +155,25 @@ describe('SessionSetupPanel - Task 3.1 Verification', () => {
   })
 
   describe('handleStart null guard', () => {
+    it('should not proceed if selectedContinents is empty - Task 3.2', () => {
+      const wrapper = mount(SessionSetupPanel, {
+        global: {
+          plugins: [router]
+        }
+      })
+      const vm = wrapper.vm as any
+      
+      // Set valid mode but empty continents
+      vm.selectedMode = 'name-it'
+      vm.selectedContinents = []
+      
+      // Try to call handleStart directly
+      const result = vm.handleStart()
+      
+      // Function should return early (undefined) and not throw
+      expect(result).toBeUndefined()
+    })
+
     it('should not proceed if selectedMode is null', () => {
       const wrapper = mount(SessionSetupPanel, {
         global: {
@@ -242,5 +262,106 @@ describe('SessionSetupPanel - Task 3.1 Verification', () => {
       // canStart should now be true
       expect(vm.canStart).toBe(true)
     })
+  })
+})
+
+describe('SessionSetupPanel - Spanish Translation (Task 12.1)', () => {
+  let router: any
+  let pinia: any
+  
+  beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    localStorage.clear()
+    
+    router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', component: { template: '<div></div>' } },
+        { path: '/play', component: { template: '<div></div>' } }
+      ]
+    })
+  })
+
+  it('should display English text when locale is "en" - Requirement 1.1', async () => {
+    const localeStore = useLocaleStore()
+    localeStore.setLocale('en')
+    
+    const wrapper = mount(SessionSetupPanel, {
+      global: {
+        plugins: [router, pinia]
+      }
+    })
+    
+    await wrapper.vm.$nextTick()
+    
+    const html = wrapper.html()
+    expect(html).toContain('Session Setup')
+    expect(html).toContain('Set up your learning configuration below.')
+    expect(html).toContain('Continent Filter')
+    expect(html).toContain('Game Mode')
+    expect(html).toContain('Questions')
+  })
+
+  it('should display Spanish text when locale is "es" - Requirements 1.2, 1.3, 1.4, 1.5', async () => {
+    const localeStore = useLocaleStore()
+    localeStore.setLocale('es')
+    
+    const wrapper = mount(SessionSetupPanel, {
+      global: {
+        plugins: [router, pinia]
+      }
+    })
+    
+    await wrapper.vm.$nextTick()
+    
+    const html = wrapper.html()
+    expect(html).toContain('Configuración de Sesión')
+    expect(html).toContain('Configura tu sesión de aprendizaje a continuación.')
+    expect(html).toContain('Filtro de Continentes')
+    expect(html).toContain('Modo de Juego')
+    expect(html).toContain('Preguntas')
+  })
+
+  it('should update translations when locale changes from en to es', async () => {
+    const localeStore = useLocaleStore()
+    localeStore.setLocale('en')
+    
+    const wrapper = mount(SessionSetupPanel, {
+      global: {
+        plugins: [router, pinia]
+      }
+    })
+    
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toContain('Session Setup')
+    
+    // Change locale to Spanish
+    localeStore.setLocale('es')
+    await wrapper.vm.$nextTick()
+    
+    expect(wrapper.html()).toContain('Configuración de Sesión')
+    expect(wrapper.html()).not.toContain('Session Setup')
+  })
+
+  it('should update translations when locale changes from es to en', async () => {
+    const localeStore = useLocaleStore()
+    localeStore.setLocale('es')
+    
+    const wrapper = mount(SessionSetupPanel, {
+      global: {
+        plugins: [router, pinia]
+      }
+    })
+    
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toContain('Configuración de Sesión')
+    
+    // Change locale to English
+    localeStore.setLocale('en')
+    await wrapper.vm.$nextTick()
+    
+    expect(wrapper.html()).toContain('Session Setup')
+    expect(wrapper.html()).not.toContain('Configuración de Sesión')
   })
 })

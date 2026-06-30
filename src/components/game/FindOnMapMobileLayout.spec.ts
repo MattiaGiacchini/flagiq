@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FindOnMapQuestion from './FindOnMapQuestion.vue'
+import FlagImage from '@/components/common/FlagImage.vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useSessionStore } from '@/stores/session'
+import { useGameStore } from '@/stores/game'
 import { FLAGS } from '@/data/flags'
 import type { Question } from '@/stores/game'
 
@@ -144,18 +146,32 @@ describe('Find on Map Mobile Layout Optimization', () => {
    * Verifies that blitz mode timer renders in mobile layout.
    */
   it('should display blitz mode timer in mobile layout', () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+
     const sessionStore = useSessionStore()
     sessionStore.config.continents = ['asia']
+
+    // Start a blitz mode game via gameStore
+    const gameStore = useGameStore()
+    gameStore.startGame({
+      continents: ['asia'],
+      mode: 'find-on-map',
+      count: 10,
+      blitz: true,
+      useSimilarity: false
+    })
+    
+    // Manually set timer for testing
+    gameStore.blitzTimeLeft = 5
 
     const wrapper = mount(FindOnMapQuestion, {
       props: {
         question: createQuestion(),
         locale: 'en',
-        blitzMode: true,
-        timeRemaining: 5,
       },
       global: {
-        plugins: [createPinia()],
+        plugins: [pinia],
       },
     })
 
@@ -172,18 +188,32 @@ describe('Find on Map Mobile Layout Optimization', () => {
    * Verifies that the low-time alert class is applied correctly.
    */
   it('should apply low-time styling when time < 3 seconds', () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+
     const sessionStore = useSessionStore()
     sessionStore.config.continents = ['oceania']
+
+    // Start a blitz mode game via gameStore
+    const gameStore = useGameStore()
+    gameStore.startGame({
+      continents: ['oceania'],
+      mode: 'find-on-map',
+      count: 10,
+      blitz: true,
+      useSimilarity: false
+    })
+    
+    // Manually set timer to low value for testing
+    gameStore.blitzTimeLeft = 2
 
     const wrapper = mount(FindOnMapQuestion, {
       props: {
         question: createQuestion(),
         locale: 'en',
-        blitzMode: true,
-        timeRemaining: 2,
       },
       global: {
-        plugins: [createPinia()],
+        plugins: [pinia],
       },
     })
 
@@ -218,7 +248,8 @@ describe('Find on Map Mobile Layout Optimization', () => {
     expect(wrapper.find('.left-panel').exists()).toBe(true)
     expect(wrapper.find('.map-container').exists()).toBe(true)
     expect(wrapper.find('.flag-display').exists()).toBe(true)
-    expect(wrapper.find('.flag-emoji').exists()).toBe(true)
+    // FlagImage component is used, not direct flag-emoji
+    expect(wrapper.findComponent(FlagImage).exists()).toBe(true)
     expect(wrapper.find('.hint-section').exists()).toBe(true)
     expect(wrapper.find('.hint-btn').exists()).toBe(true)
     expect(wrapper.find('.mode-label').exists()).toBe(true)

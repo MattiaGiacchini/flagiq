@@ -7,7 +7,10 @@ import AppLayout from './components/layout/AppLayout.vue'
 </template>
 
 <style>
-/* Design System CSS Variables */
+/* Design System CSS Variables - Light Mode Only
+ * Dark mode is intentionally disabled until complete design is available.
+ * All components should use only the light mode variables defined below.
+ */
 :root {
   /* Color Palette - Primary Brand */
   --color-primary: #4a5af7;

@@ -27,4 +27,5 @@ export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   mode: 'name-it',
   count: 'all',
   blitz: false,
+  useSimilarity: false,
 }

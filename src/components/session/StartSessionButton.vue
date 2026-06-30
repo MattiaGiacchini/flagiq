@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useLocaleStore } from '@/stores/locale'
+
 defineProps<{
   disabled?: boolean
 }>()
@@ -6,6 +9,21 @@ defineProps<{
 const emit = defineEmits<{
   'click:start': []
 }>()
+
+const localeStore = useLocaleStore()
+
+// Translations
+const translations = computed(() => {
+  return localeStore.current === 'es'
+    ? {
+        startSession: 'Iniciar Sesión',
+        selectRegion: 'Selecciona al menos una región'
+      }
+    : {
+        startSession: 'Start Session',
+        selectRegion: 'Select at least one region'
+      }
+})
 
 function handleClick() {
   emit('click:start')
@@ -20,7 +38,7 @@ function handleClick() {
     :disabled="disabled"
     @click="handleClick"
   >
-    {{ disabled ? 'Select at least one region' : 'Start Session' }}
+    {{ disabled ? translations.selectRegion : translations.startSession }}
   </button>
 </template>
 

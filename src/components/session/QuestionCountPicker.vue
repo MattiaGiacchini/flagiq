@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLocaleStore } from '@/stores/locale'
 import { VALID_COUNTS } from '@/types/session'
 import type { QuestionCount } from '@/types/session'
 
@@ -11,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [count: QuestionCount]
 }>()
+
+const localeStore = useLocaleStore()
 
 const effectiveCount = computed(() => {
   if (props.modelValue === 'all') {
@@ -27,7 +30,10 @@ function handleSelect(count: QuestionCount) {
 }
 
 function pillLabel(count: QuestionCount): string {
-  return count === 'all' ? 'All' : String(count)
+  if (count === 'all') {
+    return localeStore.current === 'es' ? 'Todas' : 'All'
+  }
+  return String(count)
 }
 </script>
 

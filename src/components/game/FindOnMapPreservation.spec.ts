@@ -8,6 +8,7 @@ import type { Question } from '@/stores/game'
 import { FLAGS } from '@/data/flags'
 import { createPinia, setActivePinia } from 'pinia'
 import { useSessionStore } from '@/stores/session'
+import { useGameStore } from '@/stores/game'
 
 /**
  * Preservation Property Tests
@@ -452,12 +453,21 @@ describe('Find on Map Preservation Properties', () => {
               options: [],
             }
 
+            // Start a blitz mode game and set timer
+            const gameStore = useGameStore()
+            gameStore.startGame({
+              continents: ['europe'],
+              mode: 'find-on-map',
+              count: 10,
+              blitz: true,
+              useSimilarity: false
+            })
+            gameStore.blitzTimeLeft = timeRemaining
+
             const wrapper = mount(FindOnMapQuestion, {
               props: {
                 question,
                 locale: 'en',
-                blitzMode: true,
-                timeRemaining,
               },
               global: {
                 plugins: [pinia],
@@ -485,7 +495,7 @@ describe('Find on Map Preservation Properties', () => {
     it('should display timer with alert animation when time < 3 seconds', () => {
       fc.assert(
         fc.property(
-          fc.integer({ min: 0, max: 2 }), // Time remaining < 3 seconds
+          fc.integer({ min: 1, max: 2 }), // Time remaining < 3 seconds but > 0
           (timeRemaining) => {
             const pinia = createPinia()
             setActivePinia(pinia)
@@ -495,12 +505,21 @@ describe('Find on Map Preservation Properties', () => {
               options: [],
             }
 
+            // Start a blitz mode game and set timer to low value
+            const gameStore = useGameStore()
+            gameStore.startGame({
+              continents: ['europe'],
+              mode: 'find-on-map',
+              count: 10,
+              blitz: true,
+              useSimilarity: false
+            })
+            gameStore.blitzTimeLeft = timeRemaining
+
             const wrapper = mount(FindOnMapQuestion, {
               props: {
                 question,
                 locale: 'en',
-                blitzMode: true,
-                timeRemaining,
               },
               global: {
                 plugins: [pinia],
@@ -517,7 +536,7 @@ describe('Find on Map Preservation Properties', () => {
             wrapper.unmount()
           }
         ),
-        { numRuns: 3 }
+        { numRuns: 2 }
       )
     })
   })

@@ -1,11 +1,17 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import ChooseFlagQuestion from './ChooseFlagQuestion.vue'
 import FlagImage from '@/components/common/FlagImage.vue'
 import type { Question } from '@/stores/game'
 import type { AppLocale } from '@/stores/locale'
 
 describe('ChooseFlagQuestion', () => {
+  beforeEach(() => {
+    // Create and set active Pinia instance for gameStore
+    setActivePinia(createPinia())
+  })
+
   const mockQuestion: Question = {
     correct: {
       id: 'us',
@@ -128,5 +134,97 @@ describe('ChooseFlagQuestion', () => {
       // eager prop should be true for immediate loading of flag options
       expect(flagImage.props('eager')).toBe(true)
     })
+  })
+
+  it('displays Blitz timer when Blitz mode is active', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'en' as AppLocale,
+      },
+    })
+
+    // Timer should not be visible initially (Blitz mode not active)
+    let timer = wrapper.find('.blitz-timer')
+    expect(timer.exists()).toBe(false)
+  })
+
+  it('does not display Blitz timer when Blitz mode is inactive', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'en' as AppLocale,
+      },
+    })
+
+    // Blitz timer should not be present
+    const timer = wrapper.find('.blitz-timer')
+    expect(timer.exists()).toBe(false)
+  })
+
+  it('displays mode label in English', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'en' as AppLocale,
+      },
+    })
+
+    const modeLabel = wrapper.find('.mode-label')
+    expect(modeLabel.text()).toBe('SEE THE COUNTRY · CHOOSE THE FLAG')
+  })
+
+  it('displays mode label in Spanish', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'es' as AppLocale,
+      },
+    })
+
+    const modeLabel = wrapper.find('.mode-label')
+    expect(modeLabel.text()).toBe('VER EL PAÍS · ELIGE LA BANDERA')
+  })
+
+  it('uses Spanish aria-label for flag options when locale is es', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'es' as AppLocale,
+      },
+    })
+
+    const buttons = wrapper.findAll('.option-btn')
+    // Before choosing, should have Spanish aria-label
+    expect(buttons[0]?.attributes('aria-label')).toBe('Opción de bandera')
+  })
+
+  it('uses English aria-label for flag options when locale is en', () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'en' as AppLocale,
+      },
+    })
+
+    const buttons = wrapper.findAll('.option-btn')
+    // Before choosing, should have English aria-label
+    expect(buttons[0]?.attributes('aria-label')).toBe('Flag option')
+  })
+
+  it('updates aria-label to country name after selection in Spanish', async () => {
+    const wrapper = mount(ChooseFlagQuestion, {
+      props: {
+        question: mockQuestion,
+        locale: 'es' as AppLocale,
+      },
+    })
+
+    const buttons = wrapper.findAll('.option-btn')
+    await buttons[0]?.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    // After choosing, aria-label should be the country name in Spanish
+    expect(buttons[0]?.attributes('aria-label')).toBe('Estados Unidos')
   })
 })

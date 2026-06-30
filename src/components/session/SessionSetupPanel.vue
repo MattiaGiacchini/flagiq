@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
+import { useLocaleStore } from '@/stores/locale'
 import { flagsByContinent } from '@/data/flags'
 import type { Continent, GameMode, QuestionCount, SessionConfig } from '@/types/session'
 import ContinentFilter from './ContinentFilter.vue'
 import GameModeSelector from './GameModeSelector.vue'
 import QuestionCountPicker from './QuestionCountPicker.vue'
 import BlitzModeToggle from './BlitzModeToggle.vue'
-import SimilarityToggle from './SimilarityToggle.vue'
 import StartSessionButton from './StartSessionButton.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
+const localeStore = useLocaleStore()
 
 // Read saved config from store (which loads from localStorage on store initialization)
 const savedConfig = sessionStore.config
@@ -25,13 +26,43 @@ const selectedContinents = ref<Continent[]>([...savedConfig.continents])
 const selectedMode = ref<GameMode | null>(hasSavedConfig ? savedConfig.mode : null)
 const selectedCount = ref<QuestionCount>(savedConfig.count)
 const blitzEnabled = ref<boolean>(savedConfig.blitz)
-const similarityEnabled = ref<boolean>(savedConfig.useSimilarity ?? false)
 
 const availableFlags = computed(() => flagsByContinent(selectedContinents.value).length)
 
 const canStart = computed(() => selectedContinents.value.length > 0 && selectedMode.value !== null)
 
+// Automatic "All flags" selection when Blitz mode is enabled
+watch(blitzEnabled, (isEnabled) => {
+  if (isEnabled) {
+    selectedCount.value = 'all'
+  }
+})
+
+// Translations
+const translations = computed(() => {
+  return localeStore.current === 'es'
+    ? {
+        title: 'Configuración de Sesión',
+        subtitle: 'Configura tu sesión de aprendizaje a continuación.',
+        continentFilter: 'Filtro de Continentes',
+        gameMode: 'Modo de Juego',
+        questions: 'Preguntas'
+      }
+    : {
+        title: 'Session Setup',
+        subtitle: 'Set up your learning configuration below.',
+        continentFilter: 'Continent Filter',
+        gameMode: 'Game Mode',
+        questions: 'Questions'
+      }
+})
+
 function handleStart() {
+  if (selectedContinents.value.length === 0) {
+    console.error('[SessionSetupPanel] Cannot start with no continents selected')
+    return
+  }
+
   if (selectedMode.value === null) {
     console.warn('[SessionSetupPanel] Cannot start with null mode')
     return
@@ -42,7 +73,7 @@ function handleStart() {
     mode: selectedMode.value,
     count: selectedCount.value,
     blitz: blitzEnabled.value,
-    useSimilarity: similarityEnabled.value,
+    useSimilarity: false,
   }
   const success = sessionStore.updateConfig(currentConfig)
   if (success) {
@@ -57,23 +88,23 @@ function handleStart() {
 <template>
   <div class="session-setup-panel">
     <div class="panel-header">
-      <h1 class="panel-header__title">Session Setup</h1>
-      <p class="panel-header__subtitle">Set up your learning configuration below.</p>
+      <h1 class="panel-header__title">{{ translations.title }}</h1>
+      <p class="panel-header__subtitle">{{ translations.subtitle }}</p>
     </div>
 
     <section class="panel-section">
-      <h2 class="panel-section__heading">Continent Filter</h2>
+      <h2 class="panel-section__heading">{{ translations.continentFilter }}</h2>
       <ContinentFilter v-model="selectedContinents" />
     </section>
 
     <section class="panel-section">
-      <h2 class="panel-section__heading">Game Mode</h2>
+      <h2 class="panel-section__heading">{{ translations.gameMode }}</h2>
       <GameModeSelector v-model="selectedMode" />
     </section>
 
     <div class="panel-row">
       <section class="panel-card">
-        <h2 class="panel-section__heading">Questions</h2>
+        <h2 class="panel-section__heading">{{ translations.questions }}</h2>
         <QuestionCountPicker
           v-model="selectedCount"
           :availableFlags="availableFlags"
@@ -82,12 +113,6 @@ function handleStart() {
 
       <section class="panel-card">
         <BlitzModeToggle v-model="blitzEnabled" />
-      </section>
-    </div>
-
-    <div class="panel-row">
-      <section class="panel-card panel-card--full">
-        <SimilarityToggle v-model="similarityEnabled" />
       </section>
     </div>
 

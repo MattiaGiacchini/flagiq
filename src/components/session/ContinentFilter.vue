@@ -26,6 +26,11 @@ function selectAll() {
 function toggleContinent(continent: Continent) {
   const isSelected = props.modelValue.includes(continent)
 
+  // Prevent deselecting the last continent
+  if (isSelected && props.modelValue.length === 1) {
+    return  // Do nothing
+  }
+
   const next = isSelected
     ? props.modelValue.filter((c) => c !== continent)
     : [...props.modelValue, continent]
@@ -85,14 +90,20 @@ const continentConfig: Record<Continent, { label: string; activeBg: string; acti
       v-for="continent in ALL_CONTINENTS"
       :key="continent"
       class="chip"
-      :class="modelValue.includes(continent) ? 'chip--on' : 'chip--off'"
+      :class="{
+        'chip--on': modelValue.includes(continent),
+        'chip--off': !modelValue.includes(continent),
+        'chip--locked': modelValue.includes(continent) && modelValue.length === 1
+      }"
       :style="modelValue.includes(continent) ? {
         '--active-bg': continentConfig[continent].activeBg,
         '--active-text': continentConfig[continent].activeText,
         '--active-border': continentConfig[continent].activeBorder,
       } : {}"
       type="button"
+      :disabled="modelValue.includes(continent) && modelValue.length === 1"
       :aria-pressed="modelValue.includes(continent)"
+      :aria-disabled="modelValue.includes(continent) && modelValue.length === 1"
       @click="toggleContinent(continent)"
     >
       {{ continentConfig[continent].label }}
@@ -162,5 +173,17 @@ const continentConfig: Record<Continent, { label: string; activeBg: string; acti
   background-color: #e9eaec;
   color: #9ca3af;
   border-color: #d1d5db;
+}
+
+/* LOCKED: last remaining continent cannot be deselected */
+.chip--locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.chip--locked:hover {
+  /* Prevent hover effects on locked chips */
+  filter: none !important;
+  transform: none !important;
 }
 </style>
