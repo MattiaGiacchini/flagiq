@@ -7,6 +7,7 @@ import type { QuestionCount } from '@/types/session'
 const props = defineProps<{
   modelValue: QuestionCount
   availableFlags: number
+  blitzEnabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -26,7 +27,13 @@ defineExpose({ effectiveCount })
 
 function handleSelect(count: QuestionCount) {
   if (count === props.modelValue) return
+  // Prevent selection of non-all options when blitz is enabled
+  if (props.blitzEnabled && count !== 'all') return
   emit('update:modelValue', count)
+}
+
+function isDisabled(count: QuestionCount): boolean {
+  return props.blitzEnabled === true && count !== 'all'
 }
 
 function pillLabel(count: QuestionCount): string {
@@ -43,9 +50,14 @@ function pillLabel(count: QuestionCount): string {
       v-for="count in VALID_COUNTS"
       :key="String(count)"
       class="pill"
-      :class="{ 'pill--active': props.modelValue === count }"
+      :class="{ 
+        'pill--active': props.modelValue === count,
+        'pill--disabled': isDisabled(count)
+      }"
       type="button"
+      :disabled="isDisabled(count)"
       :aria-pressed="props.modelValue === count"
+      :aria-disabled="isDisabled(count)"
       @click="handleSelect(count)"
     >
       {{ pillLabel(count) }}
@@ -85,5 +97,17 @@ function pillLabel(count: QuestionCount): string {
   background-color: #1a1f3c;
   border-color: #1a1f3c;
   color: #ffffff;
+}
+
+.pill--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+.pill--disabled:hover {
+  border-color: #e5e7eb;
+  color: #9ca3af;
 }
 </style>

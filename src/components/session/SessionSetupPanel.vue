@@ -108,6 +108,7 @@ function handleStart() {
         <QuestionCountPicker
           v-model="selectedCount"
           :availableFlags="availableFlags"
+          :blitzEnabled="blitzEnabled"
         />
       </section>
 

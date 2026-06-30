@@ -14,6 +14,10 @@ const props = defineProps<{
   elapsedMs: number
   answers: AnsweredQuestion[]
   locale?: 'en' | 'es'
+  isBlitz?: boolean
+  blitzCompleted?: number
+  blitzTotal?: number
+  gameMode?: string
 }>()
 
 const emit = defineEmits<{
@@ -45,6 +49,20 @@ const formattedTime = computed(() => {
   const s = total % 60
   if (m === 0) return `${s}s`
   return `${m}m ${s.toString().padStart(2, '0')}s`
+})
+
+const gameModeName = computed(() => {
+  if (!props.gameMode) return ''
+  
+  const modeNames: Record<string, { en: string; es: string }> = {
+    'name-it': { en: 'Name It', es: 'Nómbrala' },
+    'choose-flag': { en: 'Choose Flag', es: 'Elige la bandera' },
+    'type-it': { en: 'Type It', es: 'Escríbela' },
+    'find-on-map': { en: 'Find on Map', es: 'Encuéntrala' },
+  }
+  
+  const mode = modeNames[props.gameMode]
+  return mode ? (props.locale === 'es' ? mode.es : mode.en) : props.gameMode
 })
 
 // New computed properties
@@ -115,6 +133,11 @@ const hasGameData = computed(() => props.total > 0)
             
             <h2 class="results__message">{{ message }}</h2>
 
+            <!-- Game Mode Badge -->
+            <div v-if="gameModeName" class="results__mode-badge">
+              {{ gameModeName }}
+            </div>
+
             <div class="results__stats" role="group" aria-label="Score breakdown">
               <div class="results__stat">
                 <span class="results__stat-value" aria-label="{{ props.locale === 'es' ? `${score} correctas` : `${score} correct` }}">{{ score }}</span>
@@ -125,6 +148,16 @@ const hasGameData = computed(() => props.total > 0)
                 <span class="results__stat-value" aria-label="{{ props.locale === 'es' ? `${total - score} incorrectas` : `${total - score} incorrect` }}">{{ total - score }}</span>
                 <span class="results__stat-label">{{ props.locale === 'es' ? 'Incorrectas' : 'Incorrect' }}</span>
               </div>
+            </div>
+
+            <!-- Blitz completion info -->
+            <div v-if="isBlitz && blitzCompleted !== undefined && blitzTotal !== undefined" class="results__blitz-info">
+              <span class="results__blitz-label">
+                {{ props.locale === 'es' ? 'Completadas' : 'Completed' }}:
+              </span>
+              <span class="results__blitz-value">
+                {{ blitzCompleted }} / {{ blitzTotal }}
+              </span>
             </div>
 
             <div class="results__time" role="timer" :aria-label="props.locale === 'es' ? `Tiempo transcurrido: ${formattedTime}` : `Time elapsed: ${formattedTime}`">
@@ -302,6 +335,21 @@ const hasGameData = computed(() => props.total > 0)
   margin: 0;
 }
 
+.results__mode-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
 .results__stats {
   display: flex;
   align-items: center;
@@ -345,6 +393,32 @@ const hasGameData = computed(() => props.total > 0)
   background: #f0f2f8;
   padding: 0.375rem 0.875rem;
   border-radius: var(--radius-full);
+}
+
+.results__blitz-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fef3c7;
+  border-radius: var(--radius-md);
+  border: 1px solid #f59e0b;
+}
+
+.results__blitz-label {
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.results__blitz-value {
+  font-size: 1rem;
+  font-weight: var(--font-weight-bold);
+  color: #92400e;
+  font-variant-numeric: tabular-nums;
 }
 
 .results__time-value {

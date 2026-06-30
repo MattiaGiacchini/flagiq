@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, onBeforeUnmount } from 'vue'
+import { onMounted, computed, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/stores/session'
@@ -11,7 +11,6 @@ import NameItQuestion from '@/components/game/NameItQuestion.vue'
 import ChooseFlagQuestion from '@/components/game/ChooseFlagQuestion.vue'
 import TypeItQuestion from '@/components/game/TypeItQuestion.vue'
 import FindOnMapQuestion from '@/components/game/FindOnMapQuestion.vue'
-import GameResults from '@/components/game/GameResults.vue'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -21,6 +20,13 @@ const localeStore = useLocaleStore()
 const { config } = storeToRefs(sessionStore)
 const { currentQuestion, currentIndex, totalQuestions, score, streak, isFinished, elapsedMs, answers, blitzTimeLeft, isBlitzActive } = storeToRefs(gameStore)
 const { current: locale } = storeToRefs(localeStore)
+
+// Watch for game finish and redirect to results
+watch(isFinished, (finished) => {
+  if (finished) {
+    router.push('/results')
+  }
+})
 
 const t = computed(() => ({
   notEnough: locale.value === 'es'
@@ -55,15 +61,6 @@ function handleAnswer(chosenId: string, hintUsed?: boolean) {
   // Only preload if there are more questions remaining
   if (!gameStore.isFinished) {
     flagLoader.onQuestionAnswered(2)
-  }
-}
-
-function handleRestart() {
-  gameStore.startGame(config.value)
-  
-  // Re-initialize flag loader with new question set
-  if (gameStore.questions.length > 0) {
-    flagLoader.initializeSession(gameStore.questions, 3)
   }
 }
 
@@ -108,20 +105,8 @@ function handleHome() {
       </div>
     </div>
 
-    <!-- Results screen -->
-    <GameResults
-      v-if="isFinished"
-      :score="score"
-      :total="totalQuestions"
-      :elapsedMs="elapsedMs"
-      :answers="answers"
-      :locale="locale"
-      @restart="handleRestart"
-      @home="handleHome"
-    />
-
     <!-- Question screen -->
-    <template v-else-if="currentQuestion">
+    <template v-if="currentQuestion">
       <Transition name="slide" mode="out-in">
         <div :key="currentIndex" class="question-wrapper">
           <NameItQuestion
