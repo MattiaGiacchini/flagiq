@@ -138,7 +138,7 @@ export function createAnalyticsPlugin(options: AnalyticsPluginOptions) {
       // Initialize analytics service
       const config = {
         apiKey: import.meta.env.VITE_POSTHOG_API_KEY || '',
-        apiHost: import.meta.env.VITE_POSTHOG_API_HOST || 'https://app.posthog.com',
+        apiHost: import.meta.env.VITE_POSTHOG_API_HOST || 'https://eu.i.posthog.com'  
         developmentMode: import.meta.env.DEV || false,
         disabled: !import.meta.env.VITE_POSTHOG_API_KEY
       }
