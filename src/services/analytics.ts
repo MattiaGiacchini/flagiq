@@ -95,7 +95,7 @@ class AnalyticsService {
 
     try {
       // Dynamic import of PostHog SDK
-      const posthog = await import('posthog-js')
+      const { default: posthog } = await import('posthog-js')  
       
       // Initialize PostHog with privacy-focused settings
       posthog.init('phc_Bdmz4pGPXd4RfIQj9NMs41pzbAL5NxNhLN9vBiiMGpl', {
